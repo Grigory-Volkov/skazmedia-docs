@@ -16,7 +16,7 @@ job 1:
     - echo $SSH_KEY > id_ed25519
     - chmod 600 id_ed25519
     - ssh -o "StrictHostKeyChecking=no" -p $SSH_PORT -i id_ed25519 $SERVER_USER@$SERVER_IP "mkdir -p ~/example/"
-    - scp -o "StrictHostKeyChecking=no" -P $SSH_PORT -i id_ed25519 index.adoc $SERVER_USER@$SERVER_IP:~/example/
+    - scp -o "StrictHostKeyChecking=no" -P $SSH_PORT -i id_ed25519 test/text.txt $SERVER_USER@$SERVER_IP:~/example/
   artifacts:
     name: file-create
     paths:
