@@ -1,0 +1,56 @@
+=== Введение куда-то
+
+Для того чтобы конвертировать адок в html нужно выполнить 
+asciidoctor index.adoc
+а чтобы конвертировать вообще все доки и с диаграмами, то
+asciidoctor -r asciidoctor-diagram *.adoc
+Вот так мы проходим по всем докам, конвертим в хтмл и перетаскиваем в папку билд:
+find . -name "*.adoc" -exec asciidoctor -r asciidoctor-diagram -D build {} \;
+С сохранением всех папок (структуры доки)
++навигация
+find . -name "*.adoc" -exec sh -c 'mkdir -p build/$(dirname "{}") && asciidoctor -a toc -a search -r asciidoctor-diagram -D build/$(dirname "{}") "{}"' \;
+
+
+Когда-нибудь возможно сделаю полноценную реализацию
+
+потом нужно взять все эти хтмл и отправить на сервер для рендеринга. А может рендерить и прямо тут. Но кажется это плохая затея
+Дело в том, что нам весь этот asciidoctor нужен только однажды для конвертации - логично это сделать в ci как билд
+А вот полученную структуру хтмл-ей уже на сервре деплоить. Наверное nginx который просто будет страницы отрисовывать
+
+[plantuml, format="png", id="vpbx-bwks"]
+----
+participant VPBX
+participant "BWKS-business" as BWKSB
+queue Rabbit
+database Redis
+participant "BWKS-sender" as BWKSS
+participant BWKS
+ 
+VPBX -> BWKSB : POST Request
+BWKSB -> VPBX  : Result
+VPBX -> BWKSB : PUT Request
+BWKSB -> VPBX  : Result
+VPBX -> BWKSB : DELETE Request
+BWKSB -> VPBX  : Result
+BWKSB -> BWKSS : XML Request
+BWKSS -> BWKSB : XML Respone
+BWKSS -> Redis : Create Record
+Redis -> BWKSB : Get Record List
+BWKSS -> BWKS : Request
+BWKS -> BWKSS  : Respone
+----
+
+sequenceDiagram
+
+Sys1 ->> Sys2 : POST Request
+Sys2 ->> Sys1  : Result
+Sys1 ->> Sys2 : PUT Request
+Sys2 ->> Sys1  : Result
+Sys1 ->> Sys2 : DELETE Request
+Sys2 ->> Sys1  : Result
+Sys2 ->> Sys3 : XML Request
+Sys3 ->> Sys2 : XML Respone
+Sys3 ->> Redis : Create Record
+Redis ->> Sys2 : Get Record List
+Sys3 ->> Sys4 : Request
+Sys4 ->> Sys3  : Respone
