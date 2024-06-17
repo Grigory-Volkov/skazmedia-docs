@@ -1,0 +1,23 @@
+image: ubuntu:latest
+
+stages:
+  - build
+
+job 1:
+  stage: build
+  tags:
+    - docker
+  when: manual
+  scripts:
+    - mkdir test
+    - echo "Example" > test/text.txt
+    - apt-get update -y
+    - apt-get install openssh-client -y
+    - echo $SSH_KEY > id_ed25519
+    - chmod 600 id_ed25519
+    - ssh -o "StrictHostKeyChecking=no" -p $SSH_PORT -i id_ed25519 $SERVER_USER@$SERVER_IP "mkdir -p ~/example/"
+    - scp -o "StrictHostKeyChecking=no" -P $SSH_PORT -i id_ed25519 test/text.txt $SERVER_USER@$SERVER_IP:~/example/
+  artifacts:
+    name: file-create
+    paths:
+      - test
